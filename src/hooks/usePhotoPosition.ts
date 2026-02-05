@@ -10,10 +10,12 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+const PHOTO_POSITION_JSON = "/photo-position.json";
+
 /**
  * Shared hook for hero photo position and scale.
- * - Production: uses only PHOTO_POSITION_DEFAULTS from config (same for all users; no localStorage).
- * - Development: uses config as initial values; localStorage overrides on mount and is written on change (dev-only editing).
+ * - Production: fetches /photo-position.json (deployed with sync script), fallback to config; no localStorage.
+ * - Development: localStorage overrides if present; else fetches JSON; else config. Writes to localStorage on change.
  */
 export function usePhotoPosition() {
   const [position, setPosition] = useState<{ x: number; y: number }>({
@@ -23,27 +25,37 @@ export function usePhotoPosition() {
   const [scale, setScale] = useState<number>(PHOTO_POSITION_DEFAULTS.scale);
   const [mounted, setMounted] = useState(false);
 
-  // On mount: in dev only, read from localStorage to override config
+  // On mount: fetch deployed JSON; in dev prefer localStorage
   useEffect(() => {
     setMounted(true);
-    if (typeof window === "undefined" || !isDev) return;
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved) as SavedPhoto;
-        if (typeof parsed.x === "number" && typeof parsed.y === "number") {
-          setPosition({
-            x: clamp(parsed.x, 0, 100),
-            y: clamp(parsed.y, 0, 100),
-          });
-        }
-        if (typeof parsed.scale === "number") {
-          setScale(clamp(parsed.scale, 1, 2.5));
-        }
+    if (typeof window === "undefined") return;
+
+    const apply = (data: SavedPhoto) => {
+      if (typeof data.x === "number" && typeof data.y === "number") {
+        setPosition({ x: clamp(data.x, 0, 100), y: clamp(data.y, 0, 100) });
+        if (typeof data.scale === "number") setScale(clamp(data.scale, 1, 2.5));
       }
-    } catch {
-      // ignore, use config defaults
+    };
+
+    let fromStorage: SavedPhoto | null = null;
+    if (isDev) {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) fromStorage = JSON.parse(saved) as SavedPhoto;
+      } catch {
+        // ignore
+      }
     }
+
+    fetch(PHOTO_POSITION_JSON)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json: SavedPhoto | null) => {
+        if (isDev && fromStorage) apply(fromStorage);
+        else if (json) apply(json);
+      })
+      .catch(() => {
+        if (isDev && fromStorage) apply(fromStorage);
+      });
   }, []);
 
   // In dev only: save to localStorage when position/scale change (so dev can sync to config and deploy)

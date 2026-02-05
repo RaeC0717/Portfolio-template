@@ -38,7 +38,7 @@ function SyncPhotoHint({
         onClick={handleSync}
         className="mt-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 underline underline-offset-1"
       >
-        {copied ? "已复制，请运行 npm run sync-photo-position" : "同步到用户端（复制后运行同步命令）"}
+        {copied ? "已复制，终端运行: npm run sync-photo-position -- --push" : "同步到用户端（复制后运行上方命令并 --push 即部署）"}
       </button>
     </div>
   );
