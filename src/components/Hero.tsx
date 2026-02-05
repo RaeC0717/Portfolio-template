@@ -13,6 +13,37 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function SyncPhotoHint({
+  position,
+  scale,
+}: {
+  position: { x: number; y: number };
+  scale: number;
+}) {
+  const [copied, setCopied] = useState(false);
+  const handleSync = useCallback(() => {
+    const json = JSON.stringify({ x: position.x, y: position.y, scale });
+    navigator.clipboard.writeText(json).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [position.x, position.y, scale]);
+
+  return (
+    <div className="text-xs text-neutral-500 dark:text-neutral-400 font-mono text-center max-w-[300px]">
+      <span className="text-neutral-400">拖动平移 · 滚轮缩放</span>
+      <br />
+      <button
+        type="button"
+        onClick={handleSync}
+        className="mt-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 underline underline-offset-1"
+      >
+        {copied ? "已复制，请运行 npm run sync-photo-position" : "同步到用户端（复制后运行同步命令）"}
+      </button>
+    </div>
+  );
+}
+
 export default function Hero() {
   const { position, setPosition, scale, setScale, positionString } = usePhotoPosition();
   const [isDragging, setIsDragging] = useState(false);
@@ -105,9 +136,7 @@ export default function Hero() {
             />
           </div>
           {isDev && (
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 font-mono text-center max-w-[224px]">
-              <span className="text-neutral-400">拖动平移 · 滚轮缩放调整图片位置和大小</span>
-            </p>
+            <SyncPhotoHint position={position} scale={scale} />
           )}
         </div>
         <div className="lg:order-1">

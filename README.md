@@ -9,7 +9,7 @@ A modern, responsive personal portfolio website built with Next.js 14, TypeScrip
 - **📱 Fully Responsive** - Optimized for all screen sizes
 - **🎭 Interactive Intro Gate** - Long-press avatar to unlock portfolio (with haptic feedback)
 - **🎬 Smooth Animations** - Scroll-triggered animations using Animate.css and Intersection Observer
-- **🖼️ Photo Positioning** - Developer mode allows drag-to-pan and wheel-to-zoom photo adjustments
+- **🖼️ Photo Positioning** - Config-driven defaults for production; in dev, drag/zoom to adjust, then sync via `src/config/photoPosition.ts`
 - **⚡ Fast & Optimized** - Built with Next.js 14 App Router for optimal performance
 
 ## 🛠️ Tech Stack
@@ -81,6 +81,8 @@ Portfolio/
 │   │   ├── Skills.tsx
 │   │   ├── ThemeProvider.tsx
 │   │   └── ThemeToggle.tsx
+│   ├── config/
+│   │   └── photoPosition.ts    # Default photo position/scale (synced to production)
 │   └── hooks/
 │       └── usePhotoPosition.ts  # Photo position/scale hook
 ├── package.json
@@ -106,12 +108,11 @@ Portfolio/
 
 Edit `tailwind.config.ts` to customize colors, fonts, and other design tokens.
 
-### Photo Positioning (Developer Mode)
+### Photo Positioning
 
-In development mode, you can:
-- **Drag** the photo to adjust position
-- **Scroll wheel** to zoom in/out
-- Position is saved to localStorage and synced with IntroGate
+- **Production**: All users see the same photo position and scale. The values come from `src/config/photoPosition.ts`. Users cannot change them.
+- **Development**: You can **drag** to pan and **scroll wheel** to zoom. Changes are saved to localStorage (dev only) and apply to both Hero and IntroGate locally.
+- **Syncing to production**: When you’re happy with the position in dev, copy the values (e.g. from `localStorage.getItem('portfolio-hero-photo-position')` in the console) into `src/config/photoPosition.ts`, then commit and deploy. That config is the single source of truth for production.
 
 ## 🏗️ Build for Production
 
