@@ -14,7 +14,7 @@ export const PHOTO_POSITION_DEFAULTS: {
   y: number;
   scale: number;
 } = {
-  x: 50,
-  y: 50,
-  scale: 1,
+  x: 92.99999999999991,
+  y: 30.999999999999822,
+  scale: 1.12,
 };
